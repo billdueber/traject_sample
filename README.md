@@ -19,6 +19,14 @@ bundle install
 Included are a few sample configuation files, showing both a good subset of the options available
 and how you can split different logic units into separate files.
 
+You should take a minute to look at the reader/writer configuration files to see
+one way of specifying configuration across multiple files, and then walk through 
+the index.rb file to see an example of production-level code.
+
+Note that the file writer/solr.rb is just an example; you'll need to customize it to actually talk to your solr installation, and of course your actual indexing code will need to be producing the fields expected by your own solr's `schema.conf`.
+
+## Running traject
+
 You can run them as follows:
 
 ```
