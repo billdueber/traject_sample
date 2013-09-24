@@ -28,9 +28,17 @@ traject --debug-mode -c index.rb path/to/file.mrc
 # Ditto, but put the debug information in a file
 traject --debug-mode -c index.rb -s output_file=debug.out /path/to/file.mrc
 
-# Dump the output to a debug file for futher processing / examination
+# Use a configuration file to get better control over the debug information
 traject -c index.rb -c writer/debug.rb /path/to/file.mrc
 
 # Ditto, but read in a MARC-XML file
 traject -c index.rb -c reader/marc-xml.rb -c writer/debug.rb /path/to/file.xml
+
+# Dump results to a json file for later processing / examination
+traject -c index.rb -c reader/marc-xml.rb -c writer/json.rb /path/to/file.xml
+
+# Send things to solr, but turn logging to debug level
+traject -c index.rb -c reader/marc-xml.rb -c writer/solr.rb  -s log.level=debug /path/to/file.xml
+
+```
 
