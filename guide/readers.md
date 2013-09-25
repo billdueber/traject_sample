@@ -24,7 +24,9 @@ Settings that affect `Traject::MarcReader` are:
 * `marc_source.type` [default: "binary"]: the type of MARC file. Valid options are "binary" for binary MARC, "xml" for MARC-XML, and "json" (or its synonym 'ndj') for newline-delimited [marc-in-json](http://dilettantes.code4lib.org/blog/2010/09/a-proposal-to-serialize-marc-in-json/).
 * `marc_reader.xml_parser` [default: leave it up to the xml library]. Any valid XML reader option to pass to MARC::XMLReader. See [the source](https://github.com/ruby-marc/ruby-marc/blob/master/lib/marc/xmlreader.rb#L35) for all options, but really, the only one you want to use is 'nokogiri'.
 
-### Traject::Marc4JReader
+### `Traject::Marc4JReader`
+
+[See the [sample configuration for MarcReader for binary marc](../reader/marc4j.rb) or [marc-xml](../reader/marc-xml.rb) in the reader directory]
 
 `Traject::Marc4JReader` uses the [marc4j](http://github.com/marc4j/marc4j) java package to parse the underlying MARC records into standard ruby-marc records. The marc4j reader is often faster (especially for XML) and offers character encoding conversion and MARC8 support (always ending up with utf-8, though).
 
