@@ -69,7 +69,7 @@ The context is a [Traject::Indexer::Context](https://github.com/jrochkind/trajec
 * `context.output_hash` A hash mapping the field names (generally defined in `to_field` calls) to an array of values to be sent to the writer associated with that field. You *can*, but *probably should not*, mess around with this directly, doing stuff like changing the values or even adding new keys (and hence new field names). If doing stuff with side-effects is unavoidable, it's there for your use, but it exists outside any sanity checking, so you're on your own.
 * `context.skip!(msg)` An assertion that this record should be ignored. No more indexing steps will be called, no results will be sent to the writer, and a `debug`-level log message will be written stating that the record was skipped.
 
-## Using closures to avoid too much work
+## Use closures to avoid too much work
 
 A _closure_ is a computer-science term that means "a piece of code that remembers all the variables that were in scope when it was created." In ruby, lambdas and blocks are closures. Method definitions are not, which most of us have run across much to our chagrin.
 
@@ -81,18 +81,20 @@ Compare:
 
 # Create the transformer for every single record
 to_field 'normalized_title' do |rec, acc|
-  transformer = My::Custom::Format::Transformer.new # Oh no! I'm doing this 10M times!
+  transformer = My::Custom::Format::Transformer.new # Oh no! I'm doing this for each of my 10M records!
   acc << transformer.transform(rec['245'].value)
 end
 
 # Create the transformer exactly once
-transformer = My::Custom::Format::Transformer.new
+transformer = My::Custom::Format::Transformer.new # Ahhh. Do it once.
 to_field 'normalized_title' do |rec, acc|
   acc << transformer.transform(rec['245'].value)
 end
 
 
 ```
+
+### ...but don't worry about `Traject::TanslationMap`, `extract_marc`, or `Traject::MarcExporter.cached(spec)`
 
 **NOTE** that the underlying files created by `Traject::TranslationMap` and the extractors created by `extract_marc(spec)` and calls to `Traject::MarcExtractor.cached(spec)` are both cached already, so there's no need to create those outside the block. In general, it's better to keep stuff inside the block so it's easier to see what's being used by which indexing step.
 
