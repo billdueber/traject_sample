@@ -242,9 +242,9 @@ to_field 'title_a',   extract_with_and_without_filing_characters('245a', :trim_p
 to_field 'title_ab',  extract_with_and_without_filing_characters('245ab', :trim_punctuation => true)
 to_field 'title_c',   extract_marc('245c')
 
-# For vernacular title (which I want separate for a variety of reasons), I want to make sure I specify 
-# :only alternate_scripts
-to_field 'vtitle',    extract_marc('245abdefghknp', :alternate_script=>:only, :trim_punctuation => true, :deduplicate=>true)
+# For vernacular title (which I want separate for a variety of reasons), I want to 
+# make sure I specify :only alternate_scripts
+to_field 'vtitle',    extract_marc('245abdefghknp', :alternate_script=>:only, :trim_punctuation => true)
 
 # Sortable title
 to_field "titleSort", marc_sortable_title
@@ -281,7 +281,6 @@ to_field 'language', marc_languages("008[35-37]:041a:041d:041e:041j")
 # Various librarians like to have the actual 008 language code around
 to_field 'language008', extract_marc('008[35-37]') do |r, acc|
   acc.reject! {|x| x !~ /\S/} # ditch values that are just spaces
-  acc.uniq!
 end
 
 
