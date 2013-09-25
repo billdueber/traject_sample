@@ -51,7 +51,7 @@ end   # WRONG! WRONG! WRONG! WRONG! WRONG!
 # Instead, do this
 to_field('foo') {|rec, acc| acc << "some constant" }
 to_field('foo') extract_marc('020a')
-to_field('foo) do |rec, acc|
+to_field('foo') do |rec, acc|
   acc << 'bill'
   acc << 'dueber'
   acc = acc.map!{|str| str.upcase} #notice using "map!" not just "map"
@@ -66,7 +66,7 @@ The context is a [Traject::Indexer::Context](https://github.com/jrochkind/trajec
 
 * `context.clipboard` A hash into which you can stuff values that you want to pass from one indexing step to another. For example, if you go through a bunch of work to query a database and get a result you'll need more than once, stick the results somewhere in the clipboard.
 * `context.position` The position of the record in the input file (e.g., was it the first record, seoncd, etc.). Useful for error reporting
-* `context.output_hash` A hash of the results of 
+* `context.output_hash` A hash mapping the field names (generally defined in `to_field` calls) to an array of values to be sent to the writer associated with that field. You *can*, but *probably should not*, mess around with this directly, doing stuff like changing the values or even adding new keys (and hence new field names). If doing stuff with side-effects is unavoidable, it's there for your use, but it exists outside any sanity checking, so you're on your own.
 * `context.skip!(msg)` An assertion that this record should be ignored. No more indexing steps will be called, no results will be sent to the writer, and a `debug`-level log message will be written stating that the record was skipped.
 
 ## Using closures to avoid too much work
@@ -81,7 +81,7 @@ Compare:
 
 # Create the transformer for every single record
 to_field 'normalized_title' do |rec, acc|
-  transformer = My::Custom::Format::Transformer.new
+  transformer = My::Custom::Format::Transformer.new # Oh no! I'm doing this 10M times!
   acc << transformer.transform(rec['245'].value)
 end
 
