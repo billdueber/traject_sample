@@ -16,13 +16,17 @@ each_field { |record, context|  ... }
 
 ```
 
+But whare are those three arguments?
+
 ### record
 
 The `record` that gets passed to your Proc is just whatever is returned by the reader you're using. For the stock Traject readers, this is always a [MARC::Record](https://github.com/ruby-marc/ruby-marc/blob/master/lib/marc/record.rb) object, but `traject` itself doesn't care what it is so there's no reason one couldn't use Traject to index other types of data.
 
 ### accumulator
 
-At the end of your proc, you need to make sure that the  `accumulator` holds "the stuff that's going to be sent to the writer". 
+`to_field` (but not `each_record`) is also always passed an `accumulator`.
+
+At the end of your `to_field` code, you need to make sure that the  `accumulator` holds "the stuff that's going to be sent to the writer". 
 
 Whatever is in the accumulator when your code block exits gets stuffed onto the end of the `context.output_hash[field_name]` array. 
 
@@ -35,13 +39,13 @@ This means there are a variety of common ruby patters that wont work:
 
 # None of this will work the way you hope
 
-to_field('foo') {|rec, acc| acc = ["some constant"] }
-to_field('foo') {|rec, acc| acc = rec.fields('020').map{|f| f['a']} }
-to_field('foo) do |rec, acc|
+to_field('foo') {|rec, acc| acc = ["some constant"] } # WRONG!
+to_field('foo') {|rec, acc| acc = rec.fields('020').map{|f| f['a']} } # WORNG!
+to_field('foo') do |rec, acc|
   acc << 'bill'
   acc << 'dueber'
   acc = acc.map{|str| str.upcase}
-end
+end   # WRONG! WRONG! WRONG! WRONG! WRONG!  
 
 
 # Instead, do this
