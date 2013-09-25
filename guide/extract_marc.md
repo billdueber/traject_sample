@@ -2,7 +2,7 @@
 
 If you're indexing MARC records, the `extract_marc` macro is almost certainly going to be the workhorse of your indexing routines. Understanding its powers and limitations will make your life easier.
 
-Remember, all `extract_marc` overtyly does is build and return a lambda (which you never need see) that sticks values into the accumulator. Under the hood, it builds and uses a `Traject::MarcExtractor` object, which you may find useful in your own macros or custom code.
+Remember, all `extract_marc` overtly does is build and return a lambda (which you never need see) that sticks values into the accumulator. Under the hood, it builds and uses a `Traject::MarcExtractor` object, which you may find useful in your own macros or custom code.
 
 You call `extract_marc` generically as
 
