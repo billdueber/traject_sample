@@ -7,7 +7,12 @@
 # A different take on most of this stuff (and hence worth taking your
 # time to look at) is packaged with traject at
 # https://github.com/jrochkind/traject/blob/master/test/test_support/demo_config.rb
-
+#
+# Finally, the full configuration used for HathiTrust, including some 
+# Plain Old Ruby Objects needed to compute a variety of HT-specific rights
+# information, is at http://github.com/billdueber/ht_traject
+# That will be a bit more confusing, but also a more realistic take on how we
+# deal with some legacy issues and so on.
 
 
 ######################################################
@@ -236,10 +241,10 @@ to_field "author_rest", extract_marc("505r")
 ########## TITLES ##############
 ################################
 
-# For titles, we want with and without
-to_field 'title',     extract_with_and_without_filing_characters('245abdefghknp', :trim_punctuation => true)
-to_field 'title_a',   extract_with_and_without_filing_characters('245a', :trim_punctuation => true)
-to_field 'title_ab',  extract_with_and_without_filing_characters('245ab', :trim_punctuation => true)
+# For titles, we mostly want with and without non-filing characters
+to_field 'title',     extract_marc_filing_version('245abdefghknp', :include_original => true)
+to_field 'title_a',   extract_marc_filing_version('245a', :include_original => true)
+to_field 'title_ab',  extract_marc_filing_version('245ab', :include_original => true)
 to_field 'title_c',   extract_marc('245c')
 
 # For vernacular title (which I want separate for a variety of reasons), I want to make sure I specify 
