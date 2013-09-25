@@ -289,4 +289,23 @@ to_field 'language008', extract_marc('008[35-37]') do |r, acc|
 end
 
 
+# A clearly misguided attempt to find editors. Included here
+# because it's still a pretty good example of a complex routine.
 
+to_field 'editor', extract_marc('245c') do |record, accumulator, context|
+  # move on if there's no editor
+  accumulator.reject!{|val| val !~ /edited by/i}
+  # pull out the editors. Well, some of them, anyway
+  accumulator.map! do |val|
+    match = /edited by (.+?)(;|\Z)/i.match(val)
+    match && match[1]
+  end
+  
+  # Remove any nils
+  accumulator.compact!
+  
+  # Split on 'and' or '&'
+  accumulator.map!{|val| val.split /(?:\sand\s|\s&\s)/ }
+  # Flatten it out, in case we actually got any splits
+  accumulator.flatten!
+end
