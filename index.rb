@@ -105,12 +105,14 @@ logger.info RUBY_DESCRIPTION
 ###### Setup ###################
 ################################
 
-# I like to set up a hash on the clipboard where I can stick stuff
-# if I need to, knowing that it's not going to interfere with
-# anything done by a macro or anything.
-
 # each_record performs and action on every record/context pair that comes through,
 # but doesn't set a field value or send anything to the writer. 
+
+# Here, I'm using it to set up a place on the clipboard where I can 
+# stick stuff if I need to, knowing that it's not going to interfere 
+# with anything done by a macro or anything.
+
+
 each_record do |rec, context|
   context.clipboard[:mysuff] = {}
 end
