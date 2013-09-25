@@ -45,7 +45,7 @@ A variable field specification has up to three components:
 
 * a three-character tag ('245') -- required
 * a two-character indicator specification between pipes ('245|*1|') -- optional
-* list of subfields ('245|*1|abk') -- optional
+* list of subfields (resulting in something like '245|*1|abk' or '245abk') -- optional
 
 Order is important: it must be tag, optionally followed by indicators, optionally followed by subfields. 
 
@@ -73,6 +73,7 @@ You can change the join character with the `:separator=>` option to `extract_mar
 To make that last point clear, the following are equivalent:
 
 ```ruby
+# thes are the same
 to_field 'isbn', extract_marc("020az", :separator=>nil)
 to_field 'isbn', extract_marc("020a:020z")
 ```
@@ -152,9 +153,10 @@ to_field 'vtitle',    extract_marc('245abdefghknp', :alternate_script=>:only, :t
 # routine.
 
 to_field 'editor', extract_marc('245c') do |record, accumulator, context|
-  # move on if there's no editor
+  # get rid of any string that doesn't seem to hold an 'edited by'
   accumulator.reject!{|val| val !~ /edited by/i}
-  # pull out the editors. Well, some of them, anyway
+  
+  # pull out the editors we can find
   accumulator.map! do |val|
     match = /edited by (.+?)(;|\Z)/i.match(val)
     match && match[1]
