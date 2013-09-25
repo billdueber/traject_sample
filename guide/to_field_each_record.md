@@ -106,19 +106,16 @@ A few quick examples:
 
 ```ruby
 
+# Get the titles and lowercase them
 to_field 'lc_title', extract_marc('245') do |rec, acc, context|
   acc.map!{|title| title.downcase}
 end
 
-mylam = lambda do |rec, acc|
-  acc << 'one' # just add a constant
-end
-
+# Build my own lambda and use it
+mylam = lambda {|rec, acc|  acc << 'one'} # just add a constant
 to_field('foo'), mylam do |rec, acc, context|
   acc << 'two'
-end
-
-# context.output_hash['foo'] == ['one', 'two']
+end #=> context.output_hash['foo'] == ['one', 'two']
 
 
 # You might also want to do something like this
