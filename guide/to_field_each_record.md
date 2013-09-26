@@ -2,6 +2,14 @@
 
 Once you've set up a [reader](reader.md) and a [logger](logging.md) you're going to want to actually index some records. If you look in the [provided indexing code](../index.rb) you'll see a variety of uses of each.
 
+
+`each_record` simply runs the code for each record that comes through. It doesn't accept an accumulator and hence has no explicit effect on what is sent to the writer. It's most useful for linting/logging and  computing intermediate results and dumping them to the `context.clipboard`. You can also work directly on the underlying `context.output_hash` and do other weirdness, but that's doing an end-run around any safety logic `traject` has implemented, so you're on your own.
+
+`to_field` is used to actually affect the output sent to the writer. Unlike `each_record`, `to_field` takes as its first argument the name of the output field (e.g., the solr field name).
+
+**`to_field` can be repeated!** If you want to insert values in a variety of different ways, don't be afraid to call `to_field` on the dame fieldname more than once. Each index step will add to the values.
+
+
 ## Record, Accumulator, and Context
 
 `to_field` and `each_record` each take a Proc object (i.e., either a ruby block or a `lambda`). Any of the following signatures are valid:
@@ -31,7 +39,7 @@ At the end of your `to_field` code, you need to make sure that the  `accumulator
 Whatever is in the accumulator when your code block exits gets stuffed onto the end of the `context.output_hash[field_name]` array. 
 
 
-_The `accumulator` is just a reference to a ruby Array_. That means you can mess with it in whatever way you need to, **but you can't wholesale assign to it**! It's a reference, so you need to maniuplate it in place, generally with direct access, pushing/unshifting, and using methods like `#map!` and `#reject!`
+_The `accumulator` is just a reference to a ruby Array_. That means you can mess with it in whatever way you need to, **but you can't wholesale assign to it**! It's a reference, so you need to maniuplate it in place, generally with direct access, pushing/unshifting, and using methods like `#replace`, `#map!` and `#reject!`
 
 This means there are a variety of common ruby patters that wont work:
 
@@ -50,7 +58,7 @@ end   # WRONG! WRONG! WRONG! WRONG! WRONG!
 
 # Instead, do this
 to_field('foo') {|rec, acc| acc << "some constant" }
-to_field('foo') extract_marc('020a')
+to_field('foo')  {|rec, acc| acc.replace(rec.fields('020').map{|f| f['a']}) }
 to_field('foo') do |rec, acc|
   acc << 'bill'
   acc << 'dueber'
