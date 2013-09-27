@@ -1,10 +1,15 @@
 # Logging with Traject
 
-Logging is a useful tool that can allow you to see where things are breaking or slowing down, keep track of progress, even warn you of data this is substandard without stopping the indexing process.
+Logging is a useful tool that can allow you to see where things are
+breaking or slowing down, keep track of progress, even warn you of
+data this is substandard without stopping the indexing process.
 
 ## Uses for the logger.
 
-The logger is available to the indexer simply as `logger`, which means it's available in all your `each_record` and `to_field` routines as well. You might use it to note what's going on outside of any indexing routine, to note bad data, or to debug problems.
+The logger is available to the indexer simply as `logger`, which means
+it's available in all your `each_record` and `to_field` routines as
+well. You might use it to note what's going on outside of any indexing
+routine, to note bad data, or to debug problems.
 
 ```ruby
 # An example of logging in a configuration file
@@ -27,7 +32,9 @@ end
 
 ## Settings for the default logger
 
-By default, `traject` uses a [Yell](https://github.com/rudionrails/yell) logger set to level `info` and outputting to $stderr. 
+By default, `traject` uses a
+[Yell](https://github.com/rudionrails/yell) logger set to level `info`
+and outputting to $stderr.
 
 You can affect it with the following options:
 
@@ -45,11 +52,16 @@ You can affect it with the following options:
 
 ## Using a different logger
 
-If you want to use a different logging package to integrate with existing code, you can set it in a configuration file. It just needs to be able to responsd to the normal `#debug`, `#info`, `#warn`, and `#error` messages.
+If you want to use a different logging package to integrate with
+existing code, you can set it in a configuration file. It just needs
+to be able to responsd to the normal `#debug`, `#info`, `#warn`, and
+`#error` messages.
 
-Obviously, your own logger won't be checking the settings unless you chooose to, so you'll have to set it all up "manually". 
+Obviously, your own logger won't be checking the settings unless you
+chooose to, so you'll have to set it all up "manually".
 
-Make sure to set the logger in a configuration file with `self.logger=`. 
+Make sure to set the logger in a configuration file with
+`self.logger=`.
 
 
 ```ruby

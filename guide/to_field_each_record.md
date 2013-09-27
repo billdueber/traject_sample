@@ -1,18 +1,33 @@
 # Traject Indexing: to_field and each_record
 
-Once you've set up a [reader](reader.md) and a [logger](logging.md) you're going to want to actually index some records. If you look in the [provided indexing code](../index.rb) you'll see a variety of uses of each.
+Once you've set up a [reader](reader.md) and a [logger](logging.md)
+you're going to want to actually index some records. If you look in
+the [provided indexing code](../index.rb) you'll see a variety of uses
+of each.
 
+`each_record` simply runs the code for each record that comes through.
+It doesn't accept an accumulator and hence has no explicit effect on
+what is sent to the writer. It's most useful for linting/logging and
+computing intermediate results and dumping them to the
+`context.clipboard`. You can also work directly on the underlying
+`context.output_hash` and do other weirdness, but that's doing an
+end-run around any safety logic `traject` has implemented, so you're
+on your own.
 
-`each_record` simply runs the code for each record that comes through. It doesn't accept an accumulator and hence has no explicit effect on what is sent to the writer. It's most useful for linting/logging and  computing intermediate results and dumping them to the `context.clipboard`. You can also work directly on the underlying `context.output_hash` and do other weirdness, but that's doing an end-run around any safety logic `traject` has implemented, so you're on your own.
+`to_field` is used to actually affect the output sent to the writer.
+Unlike `each_record`, `to_field` takes as its first argument the name
+of the output field (e.g., the solr field name).
 
-`to_field` is used to actually affect the output sent to the writer. Unlike `each_record`, `to_field` takes as its first argument the name of the output field (e.g., the solr field name).
-
-**`to_field` can be repeated!** If you want to insert values in a variety of different ways, don't be afraid to call `to_field` on the dame fieldname more than once. Each index step will add to the values.
+**`to_field` can be repeated!** If you want to insert values in a
+variety of different ways, don't be afraid to call `to_field` on
+the same fieldname more than once. Each index step will add to the
+values.
 
 
 ## Record, Accumulator, and Context
 
-`to_field` and `each_record` each take a Proc object (i.e., either a ruby block or a `lambda`). Any of the following signatures are valid:
+`to_field` and `each_record` each take a Proc object (i.e., either a
+ruby block or a `lambda`). Any of the following signatures are valid:
 
 ```ruby
 
@@ -28,18 +43,30 @@ But whare are those three arguments?
 
 ### record
 
-The `record` that gets passed to your Proc is just whatever is returned by the reader you're using. For the stock Traject readers, this is always a [MARC::Record](https://github.com/ruby-marc/ruby-marc/blob/master/lib/marc/record.rb) object, but `traject` itself doesn't care what it is so there's no reason one couldn't use Traject to index other types of data.
+The `record` that gets passed to your Proc is just whatever is
+returned by the reader you're using. For the stock Traject readers,
+this is always a
+[MARC::Record](https://github.com/ruby-marc/ruby-marc/blob/master/lib/marc/record.rb)
+object, but `traject` itself doesn't care what it is so there's no
+reason one couldn't use Traject to index other types of data.
 
 ### accumulator
 
-`to_field` (but not `each_record`) is also always passed an `accumulator`.
+`to_field` (but not `each_record`) is also always passed an
+`accumulator`.
 
-At the end of your `to_field` code, you need to make sure that the  `accumulator` holds "the stuff that's going to be sent to the writer". 
+At the end of your `to_field` code, you need to make sure that the
+`accumulator` holds "the stuff that's going to be sent to the writer".
 
-Whatever is in the accumulator when your code block exits gets stuffed onto the end of the `context.output_hash[field_name]` array. 
+Whatever is in the accumulator when your code block exits gets stuffed
+onto the end of the `context.output_hash[field_name]` array.
 
 
-_The `accumulator` is just a reference to a ruby Array_. That means you can mess with it in whatever way you need to, **but you can't wholesale assign to it**! It's a reference, so you need to maniuplate it in place, generally with direct access, pushing/unshifting, and using methods like `#replace`, `#map!` and `#reject!`
+_The `accumulator` is just a reference to a ruby Array_. That means
+you can mess with it in whatever way you need to, **but you can't
+wholesale assign to it**! It's a reference, so you need to maniuplate
+it in place, generally with direct access, pushing/unshifting, and
+using methods like `#replace`, `#map!` and `#reject!`
 
 This means there are a variety of common ruby patters that wont work:
 
@@ -70,7 +97,9 @@ end
 
 ### context
 
-The context is a [Traject::Indexer::Context](https://github.com/jrochkind/traject/blob/master/lib/traject/indexer.rb#L366) object. It has the following useful properties and methods
+The context is a
+[Traject::Indexer::Context](https://github.com/jrochkind/traject/blob/master/lib/traject/indexer.rb#L366)
+object. It has the following useful properties and methods
 
 * `context.clipboard` A hash into which you can stuff values that you want to pass from one indexing step to another. For example, if you go through a bunch of work to query a database and get a result you'll need more than once, stick the results somewhere in the clipboard.
 * `context.position` The position of the record in the input file (e.g., was it the first record, seoncd, etc.). Useful for error reporting
@@ -79,9 +108,14 @@ The context is a [Traject::Indexer::Context](https://github.com/jrochkind/trajec
 
 ## Use closures to avoid too much work
 
-A _closure_ is a computer-science term that means "a piece of code that remembers all the variables that were in scope when it was created." In ruby, lambdas and blocks are closures. Method definitions are not, which most of us have run across much to our chagrin.
+A _closure_ is a computer-science term that means "a piece of code
+that remembers all the variables that were in scope when it was
+created." In ruby, lambdas and blocks are closures. Method definitions
+are not, which most of us have run across much to our chagrin.
 
-Within the context of `traject`, this means you can define a variable outside of a `to_field` or `each_record` block and it will be avaiable inside those blocks. And you only have to define it once.
+Within the context of `traject`, this means you can define a variable
+outside of a `to_field` or `each_record` block and it will be avaiable
+inside those blocks. And you only have to define it once.
 
 Compare:
 
@@ -104,11 +138,18 @@ end
 
 ### ...but don't worry about `Traject::TanslationMap`, `extract_marc`, or `Traject::MarcExporter.cached(spec)`
 
-**NOTE** that the underlying files created by `Traject::TranslationMap` and the extractors created by `extract_marc(spec)` and calls to `Traject::MarcExtractor.cached(spec)` are both cached already, so there's no need to create those outside the block. In general, it's better to keep stuff inside the block so it's easier to see what's being used by which indexing step.
+NOTE that the underlying files created by `Traject::TranslationMap`
+and the extractors created by `extract_marc(spec)` and calls to
+`Traject::MarcExtractor.cached(spec)` are both cached already, so
+there's no need to create those outside the block. In general, it's
+better to keep stuff inside the block so it's easier to see what's
+being used by which indexing step.
 
 ## Using a lambda _and_ and block
 
-Traject macros (such as `extract_marc`) create and return a lambda. If you include a lambda _and_ a block on a `to_field` call, the latter gets the accumulator as it was filled in by the former.
+Traject macros (such as `extract_marc`) create and return a lambda. If
+you include a lambda _and_ a block on a `to_field` call, the latter
+gets the accumulator as it was filled in by the former.
 
 A few quick examples:
 

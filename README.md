@@ -1,14 +1,17 @@
 # Traject Sample Project
 
-This is a sample Traject project based on production code running the indexing
-process for the [HatiTrust catalog](http://www.hathitrust.org/). It covers much 
-of the standard functionality, but you'll still definitely want to read the `traject`
-documentation for fuller explanations of what's going on and a complete description
-of the out-of-the-box macros available.
+This is a sample Traject project based on production code running the
+indexing process for the [HatiTrust
+catalog](http://www.hathitrust.org/). It covers much of the standard
+functionality, but you'll still definitely want to read the `traject`
+documentation for fuller explanations of what's going on and a
+complete description of the out-of-the-box macros available.
+
 
 ## Getting started
 
-You should just be able to clone this repository and then, **under JRuby**, run
+You should just be able to clone this repository and then, **under
+JRuby**, run
 
 ```
 bundle install
@@ -16,14 +19,19 @@ bundle install
 
 ## The configuration files
 
-Included are a few sample configuation files, showing both a good subset of the options available
-and how you can split different logic units into separate files.
+Included are a few sample configuation files, showing both a good
+subset of the options available and how you can split different
+logic units into separate files.
 
-You should take a minute to look at the reader/writer configuration files to see
-one way of specifying configuration across multiple files, and then walk through 
-the index.rb file to see an example of production-level code.
+You should take a minute to look at the reader/writer configuration
+files to see one way of specifying configuration across multiple
+files, and then walk through the index.rb file to see an example of
+production-level code.
 
-Note that the file writer/solr.rb is just an example; you'll need to customize it to actually talk to your solr installation, and of course your actual indexing code will need to be producing the fields expected by your own solr's `schema.conf`.
+Note that the file writer/solr.rb is just an example; you'll need to
+customize it to actually talk to your solr installation, and of course
+your actual indexing code will need to be producing the fields
+expected by your own solr's `schema.conf`.
 
 ## Running traject
 

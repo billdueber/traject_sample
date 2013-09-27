@@ -2,22 +2,28 @@
 
 ## Picking a MARC Reader
 
-You can tell `traject` which style of MARC reader you want to use by specifying the 
-class of the reader in several ways:
+You can tell `traject` which style of MARC reader you want to use by
+specifying the class of the reader in several ways:
 
 * on the command line with `-r <classname>`
 * on the command line with `-s reader_class_name <classname>`
 * in a configuration file by `provide "reader_class_name", "<classname>"`
 
-For regular binary, utf-8 MARC files, the MarcReader and Marc4JReader have similar performance characteristics (and solr is almost certainly going to be your bottleneck anyway). For NJD/JSON, MarcReader is your only option. For MARC-XML or non-utf8 binary marc, you'll probably want to go with marc4j.
+For regular binary, utf-8 MARC files, the MarcReader and Marc4JReader
+have similar performance characteristics (and solr is almost certainly
+going to be your bottleneck anyway). For NJD/JSON, MarcReader is your
+only option. For MARC-XML or non-utf8 binary marc, you'll probably
+want to go with marc4j.
 
 ### `Traject::MarcReader` 
 
-[See the [sample configuration for MarcReader](../reader/marc.rb) in the reader directory]
+[See the [sample configuration for MarcReader](../reader/marc.rb) in
+the reader directory]
 
 
 `Traject::MarcReader` is based on the stock [ruby-marc](http://github.com/ruby-marc/ruby-marc/)
-reader class. By default, it instantiates a basic MARC21/unicode binary reader, but can also read MARC-XML or marc-in-json.
+reader class. By default, it instantiates a basic MARC21/unicode
+binary reader, but can also read MARC-XML or marc-in-json.
 
 Settings that affect `Traject::MarcReader` are:
 
@@ -26,7 +32,9 @@ Settings that affect `Traject::MarcReader` are:
 
 ### `Traject::Marc4JReader`
 
-[See the [sample configuration for MarcReader for binary marc](../reader/marc4j.rb) or [marc-xml](../reader/marc-xml.rb) in the reader directory]
+[See the [sample configuration for MarcReader for binary
+marc](../reader/marc4j.rb) or [marc-xml](../reader/marc-xml.rb) in the
+reader directory]
 
 `Traject::Marc4JReader` uses the [marc4j](http://github.com/marc4j/marc4j) java package to parse the underlying MARC records into standard ruby-marc records. The marc4j reader is often faster (especially for XML) and offers character encoding conversion and MARC8 support (always ending up with utf-8, though).
 
