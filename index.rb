@@ -293,10 +293,17 @@ end
 
 # A clearly misguided attempt to find editors. Included here
 # because it's still a pretty good example of a complex routine.
+#
+# Note how we have to use things that actually affect the
+# accumulator itself (#reject!, #map!, #compact!, #replace, etc.) since we
+# can't assign to the accumulator, we need to actually
+# affect the array to which it points.
 
 to_field 'editor', extract_marc('245c') do |record, accumulator, context|
-  # move on if there's no editor
+
+  # Throw away everything that doesn't look like it mentions editors
   accumulator.reject!{|val| val !~ /edited by/i}
+
   # pull out the editors. Well, some of them, anyway
   accumulator.map! do |val|
     match = /edited by (.+?)(;|\Z)/i.match(val)
