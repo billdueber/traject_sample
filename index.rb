@@ -165,18 +165,18 @@ to_field "id", extract_marc("001", :first => true)
 #
 # You could also use serialized_marc(:format=>'xml'), but it's REALLY slow
 # We need to address that in ruby-marc
-#to_field 'fullrecord' do |r, acc, context|
-#  xmlos = java.io.ByteArrayOutputStream.new
-#  writer = org.marc4j.MarcXmlWriter.new(xmlos)
-#  writer.setUnicodeNormalization(true)
-#  writer.write(context.clipboard[:marc4j][:marc4j_record])
-#  writer.writeEndDocument();
-#  acc << xmlos.toString
-#end
-#
-#
-## Get the values for all the fields between 100 and 999
-#to_field "allfields", extract_all_marc_values(:from=>'100', :to=>'999')
+to_field 'fullrecord' do |r, acc, context|
+  xmlos = java.io.ByteArrayOutputStream.new
+  writer = org.marc4j.MarcXmlWriter.new(xmlos)
+  writer.setUnicodeNormalization(true)
+  writer.write(context.clipboard[:marc4j][:marc4j_record])
+  writer.writeEndDocument();
+  acc << xmlos.toString
+end
+
+
+# Get the values for all the fields between 100 and 999
+to_field "allfields", extract_all_marc_values(:from=>'100', :to=>'999')
   
 
 ################################
