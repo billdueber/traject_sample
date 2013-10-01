@@ -10,7 +10,7 @@ The _de facto_ and _de jure_ source of cannonical traject documentation is [the 
 
 ## The Guide: Table of Contents
 
-* [Why use traject instead of <something else>](why_traject.md)
+* [Why consider traject instead of something else](why_traject.md)
 * [Configuration files](configuration_files.md)
 * [Reading in MARC](readers.md)
 * [Writing things out](writers.md)
