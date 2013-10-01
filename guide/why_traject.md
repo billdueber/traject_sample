@@ -3,7 +3,7 @@
 `traject` was born out of our collective experience with two other systems designed to do basically the same thing: Bob Haschart's very popular java suite [solrmarc](https://code.google.com/p/solrmarc/), and my (decidedly-less-popular) jruby-based [marc2solr](http://github.com/billdueber/marc2solr/). In traject, Jonathan (and later I) were able to address features and anti-features derived from a variety of pain points associated with both.
 
 
-_solrmarc_, to dominant codebase in the MARC->Solr space, is a java-based, configuration-driven system that has a tight integration with solr as its output and MARC as its input (hence the name), requires java or beanshell code to extend, and is aimed, in many ways, at providing a powerful system for people who are comfortable editing configuration files but not as comfortable writing code.
+_solrmarc_, the dominant codebase in the MARC->Solr space, is a java-based, configuration-driven system that has a tight integration with solr as its output and MARC as its input (hence the name), requires java or beanshell code to extend, and is aimed, in many ways, at providing a powerful system for people who are comfortable editing configuration files but not as comfortable writing code.
 
 There are many of us in the marc->solr community that fall outside of that sweet spot. We're comfortable programming (esp. in a dynamic language), and want to be able to easily experiment with different indexing patterns quickly and in a testable manner. Some of us are, admittedly, less comfortable using Java (both its code and its build environments) and have been hampered by (or simply discouraged by) this when trying to use solrmarc.
 
