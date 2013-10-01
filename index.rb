@@ -16,7 +16,7 @@
 
 
 ######################################################
-######## Set the load path and load things up ########
+######## Set the load path and load up macros ########
 ######################################################
 
 
@@ -24,7 +24,7 @@
 # allow Traject::TranslationMap to find files in 
 # './lib/translation_maps/'
 
-$:.unshift  "#{File.dirname(__FILE__)}/../lib"
+$:.unshift  "#{File.dirname(__FILE__)}/lib"
 
 
 # Pull in the standard marc21 semantics, to get stuff like
@@ -45,11 +45,11 @@ settings do
 end
 
 
-# It's a good idea to output exactly what you're running, so you know you're
-# using the versions of java and jruby that you think you are.
+# It's a good idea to output exactly what you're running, so you know 
+# you're using the versions of java and jruby that you think you are.
 #
-# Note that you have access to a logger within this (and any) configuration 
-# file. Don't be afraid to use it.
+# Highlights that you have access to a logger within this (and any) 
+# configuration file. Don't be afraid to use it.
 
 logger.info RUBY_DESCRIPTION
 
@@ -65,7 +65,7 @@ logger.info RUBY_DESCRIPTION
 # set variables, compute logic based on environment variables,
 # etc. -- whatever you need.
 #
-# Special to the configuation files are four methods:
+# Available to the configuation files are four methods:
 # * logger, which you've already seen, holds a logger
 # * settings, also seen above, which allows you to pass settings to
 #   the traject process. Use of settings is not limited to a single 
@@ -163,8 +163,9 @@ to_field "id", extract_marc("001", :first => true)
 # marc_converter) that the marc4j libraries are all loaded up,
 # so I'm comfortable calling org.marc4j.MarcXmlWriter.new
 #
-# You could also use serialized_marc(:format=>'xml'), but it's REALLY slow
-# We need to address that in ruby-marc
+# You could also use serialized_marc(:format=>'xml'), but it's REALLY 
+# slow. We need to address that in ruby-marc itself
+
 to_field 'fullrecord' do |r, acc, context|
   xmlos = java.io.ByteArrayOutputStream.new
   writer = org.marc4j.MarcXmlWriter.new(xmlos)
@@ -205,7 +206,8 @@ end
 # require 'library_stdnums'
 #
 # to_field 'isbn' do |record, acc|
-#   isbn_spec = Traject::MarcExtractor.cached('020az', :separator=>nil) # 
+#   isbn_spec = Traject::MarcExtractor.cached('020az', :separator=>nil)
+# 
 #   vals = []
 #   isbn_spec.extract(record).each do |v|
 #     std = StdNum::ISBN.allNormalizedValues(v)
@@ -219,10 +221,24 @@ end
 #   acc.concat vals
 # end
 
+# Instead, just grab the values and let the server sort it out
 to_field 'isbn', extract_marc('020a:020z')
-to_field 'issn', extract_marc('022a:022l:022m:022y:022z:247x')
-to_field 'isn_related', extract_marc("400x:410x:411x:440x:490x:500x:510x:534xz:556z:581z:700x:710x:711x:730x:760x:762x:765xz:767xz:770xz:772x:773xz:774xz:775xz:776xz:777x:780xz:785xz:786xz:787xz")
 
+to_field 'issn', extract_marc('022a:022l:022m:022y:022z:247x')
+
+# Here, I'll take advantage of the fact that extract_marc can take an
+# array of field specifications (optionally still colon-delimited)
+# to make things more readable
+
+to_field 'isn_related', extract_marc(%w[ 
+  400x:410x:411x:440x:490x
+  500x:510x:534xz:556z:581z
+  700x:710x:711x:730x
+  760x:762x:765xz:767xz
+  770xz:772x:773xz:774xz:775xz:776xz:777x
+  780xz:785xz:786xz:787xz
+  ])
+  
 to_field 'sudoc', extract_marc('086az')
 to_field "lccn", extract_marc('010a')
 to_field 'rptnum', extract_marc('088a')
@@ -234,6 +250,9 @@ to_field 'rptnum', extract_marc('088a')
 to_field 'mainauthor', extract_marc('100abcd:110abcd:111abc')
 to_field 'author', extract_marc("100abcd:110abcd:111abc:700abcd:710abcd:711abc")
 to_field 'author2', extract_marc("110ab:111ab:700abcd:710ab:711ab")
+
+
+# Can only have one value to sort on, so specify :first=>true
 to_field "authorSort", extract_marc("100abcd:110abcd:111abc:110ab:700abcd:710ab:711ab", :first=>true)
 to_field "author_top", extract_marc("100abcdefgjklnpqtu0:110abcdefgklnptu04:111acdefgjklnpqtu04:700abcdejqux034:710abcdeux034:711acdegjnqux034:720a:765a:767a:770a:772a:774a:775a:776a:777a:780a:785a:786a:787a:245c")
 to_field "author_rest", extract_marc("505r")
@@ -243,22 +262,31 @@ to_field "author_rest", extract_marc("505r")
 ########## TITLES ##############
 ################################
 
-# For titles, we mostly want with and without non-filing characters
+# For titles, we mostly want with and without non-filing characters  
+# so we can boost exact phrase searching.
 to_field 'title',     extract_marc_filing_version('245abdefghknp', :include_original => true)
 to_field 'title_a',   extract_marc_filing_version('245a', :include_original => true)
 to_field 'title_ab',  extract_marc_filing_version('245ab', :include_original => true)
 to_field 'title_c',   extract_marc('245c')
 
-# For vernacular title (which I want separate for a variety of reasons), I want to 
-# make sure I specify :only alternate_scripts
+# For vernacular title (which I want separate for a variety of
+# reasons), I want to  make sure I specify :only alternate_scripts
 to_field 'vtitle',    extract_marc('245abdefghknp', :alternate_script=>:only, :trim_punctuation => true)
 
-# Sortable title
+# Sortable title, using the provided marc_sortable_title field
 to_field "titleSort", marc_sortable_title
 
 
 to_field "title_top", extract_marc("240adfghklmnoprs0:245abfghknps:247abfghknps:111acdefgjklnpqtu04:130adfghklmnoprst0")
-to_field "title_rest", extract_marc("210ab:222ab:242abhnpy:243adfghklmnoprs:246abdenp:247abdenp:700fghjklmnoprstx03:710fghklmnoprstx03:711acdefghjklnpqstux034:730adfghklmnoprstx03:740ahnp:765st:767st:770st:772st:773st:775st:776st:777st:780st:785st:786st:787st:830adfghklmnoprstv:440anpvx:490avx:505t")
+to_field "title_rest", extract_marc(%w[
+  210ab:222ab:242abhnpy:243adfghklmnoprs:246abdenp:247abdenp
+  700fghjklmnoprstx03:710fghklmnoprstx03:711acdefghjklnpqstux034
+  730adfghklmnoprstx03:740ahnp:765st:767st
+  770st:772st:773st:775st:776st:777st:780st:785st:786st:787st
+  830adfghklmnoprstv
+  440anpvx:490avx:505t
+  ])
+  
 to_field "series", extract_marc("440ap:800abcdfpqt:830ap")
 to_field "series2", extract_marc("490a")
 
@@ -269,20 +297,96 @@ to_field "series2", extract_marc("490a")
 to_field 'callnumber', extract_marc('050ab:090ab')
 to_field 'broad_subject', marc_lcc_to_broad_category
 
+###############################
+##### Location ################
+###############################
+
+# take advantage of provided macro in traject for geo faceting
+to_field "geo", marc_geo_facet
+
+# Naive country of publication stuff. Included here because it shows:
+#  * how to use a translation map
+#  * that we can rely on indexing steps happening in order
+#  * how to dig into the context object if you need to
+
+# First, I'll just get the language codes out of the 008
+to_field 'lousy_country_code', extract_marc('008[15-17]:008[17]') do |rec, acc, context|
+  # remove spaces and ditch the empties
+  acc.map!(&:strip)
+  acc.compact!
+  acc.reject!{|code| code.empty?}
+end
+
+# Now, a first shot at getting the country names would be to do this:
+
+to_field 'easy_lousy_country_code', 
+              extract_marc('008[15-17]:008[17]', 
+                           :trim_punctuation=>true,
+                           :translation_map=>'sample/country_map')
+
+
+# ...but that doesn't work the way you'd hope because it
+# trims the punctuation *after* applying the translation
+# map. That means a country code like 'io ' won't map
+# to Indonesia using our map. 
+#
+# So, we do it by hand
+
+
+# Now, use those values to compute something else with them.
+to_field 'lousy_country_name' do |rec, acc, context|
+  # First, get a "new" translation map.
+  #
+  # We *could* keep this outside the to_field call and only
+  # do it once, but all the hard work of finding
+  # and loading it from disk is cached, so it's really cheap.
+  # I prefer to keep stuff inside the to_field when possible
+  # for readability
+  #
+  # The ./lib/ directory was added to the ruby path way up in 
+  # line 27, which means Traject::TranslationMap will automatically
+  # look inside 'lib/translation_maps' for translation files.
+  #
+  # Note that I "namespaced" my translation maps by putting
+  # them in a subdirectory ('sample') inside lib/translation_maps.
+  # This isn't formally required, but we want to do it to avoid
+  # namespace collisions (i.e., it's not hard to imagine lots of
+  # traject macros that use a translation file called 'format'
+  # or whatnot). 
+
+  country_tmap = Traject::TranslationMap.new('sample/country_map')
+
+  # Now dig into the context output_hash to get anything that might
+  # have come out of our `lousy_geo_code` step above and 
+  # translate it
+  
+  if context.output_hash['lousy_country_code']
+    context.output_hash['lousy_country_code'].each do |code|
+      name = country_tmap[code]
+      acc << name if name
+    end
+  end
+end
+  
 
 
 ################################
 ########### MISC ###############
 ################################
 
-to_field "geo", marc_geo_facet
+# Once again, take advantage of traject-supplied macros
 to_field "pubdate", marc_publication_date
 to_field "format", marc_formats
-to_field "publisher", extract_marc('260b:264|*1|:533c')
+
+
+# For the publisher, make sure to take RDA-style 264, second
+# indicator = 1
+to_field "publisher", extract_marc('260b:264|*1|b:533c')
 to_field "edition", extract_marc('250a')
 
 to_field 'era', marc_era_facet
 
+# Note how easy it is to mix control/variable field specs
 to_field 'language', marc_languages("008[35-37]:041a:041d:041e:041j")
 
 # Various librarians like to have the actual 008 language code around

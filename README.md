@@ -17,6 +17,10 @@ JRuby**, run
 bundle install
 ```
 
+That should install all the things you need, including `traject` itself. Then take a peek around the configuration files that specify readers and writers in the appropriate subdirectories, and take some time to look through the main [`index.rb`](index.rb) file, which contains a bunch of examples of how to extract and transform data from MARC files.
+
+
+
 ## The configuration files
 
 Included are a few sample configuation files, showing both a good
@@ -35,7 +39,12 @@ expected by your own solr's `schema.conf`.
 
 ## Running traject
 
-You can run them as follows:
+`traject` takes a variety of options, many of which can be seen by simply running `traject --help`. Two of the most important are:
+
+* `-c configfile`: Load a configuration file, such as those found under `reader/` and `writer/` in this repository
+* `-s setting.name=value`: Provide a command-line equivalent to the `provide` command used to control settings in a configuration file.
+
+Here are a few examples:
 
 ```
 # Run a MARC binary file and get debug output to stdout
