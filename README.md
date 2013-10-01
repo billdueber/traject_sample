@@ -37,6 +37,10 @@ customize it to actually talk to your solr installation, and of course
 your actual indexing code will need to be producing the fields
 expected by your own solr's `schema.conf`.
 
+## Learning more
+
+Take a look at [my simple guide to using traject](guide/README.md) for ideas about how to proceed. 
+
 ## Running traject
 
 `traject` takes a variety of options, many of which can be seen by simply running `traject --help`. Two of the most important are:

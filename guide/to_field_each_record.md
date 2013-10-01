@@ -98,7 +98,7 @@ end
 ### context
 
 The context is a
-[Traject::Indexer::Context](https://github.com/jrochkind/traject/blob/master/lib/traject/indexer.rb#L366)
+[Traject::Indexer::Context](http://rdoc.info/github/jrochkind/traject/Traject/Indexer/Context)
 object. It has the following useful properties and methods
 
 * `context.clipboard` A hash into which you can stuff values that you want to pass from one indexing step to another. For example, if you go through a bunch of work to query a database and get a result you'll need more than once, stick the results somewhere in the clipboard.
