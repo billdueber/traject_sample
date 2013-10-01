@@ -6,7 +6,7 @@ You can tell `traject` which style of MARC reader you want to use by
 specifying the class of the reader in several ways:
 
 * on the command line with `-r <classname>`
-* on the command line with `-s reader_class_name <classname>`
+* on the command line with `-s reader_class_name=<classname>`
 * in a configuration file by `provide "reader_class_name", "<classname>"`
 
 For regular binary, utf-8 MARC files, the MarcReader and Marc4JReader
