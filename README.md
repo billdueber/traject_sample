@@ -52,6 +52,7 @@ traject --debug-mode -c index.rb path/to/file.mrc
 
 # Ditto, but put the debug information in a file
 traject --debug-mode -c index.rb -s output_file=debug.out /path/to/file.mrc
+# ...and look at debug.out to see what happened
 
 # Use a configuration file to get better control over the debug information
 traject -c index.rb -c writer/debug.rb /path/to/file.mrc
