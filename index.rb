@@ -319,7 +319,7 @@ end
 
 # Now, a first shot at getting the country names would be to do this:
 
-to_field 'easy_lousy_country_code', 
+to_field 'easy_lousy_country_name', 
               extract_marc('008[15-17]:008[17]', 
                            :trim_punctuation=>true,
                            :translation_map=>'sample/country_map')
