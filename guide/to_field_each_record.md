@@ -103,7 +103,7 @@ object. It has the following useful properties and methods
 
 * `context.clipboard` A hash into which you can stuff values that you want to pass from one indexing step to another. For example, if you go through a bunch of work to query a database and get a result you'll need more than once, stick the results somewhere in the clipboard.
 * `context.position` The position of the record in the input file (e.g., was it the first record, seoncd, etc.). Useful for error reporting
-* `context.output_hash` A hash mapping the field names (generally defined in `to_field` calls) to an array of values to be sent to the writer associated with that field. You *can*, but *probably should not*, mess around with this directly, doing stuff like changing the values or even adding new keys (and hence new field names). If doing stuff with side-effects is unavoidable, it's there for your use, but it exists outside any sanity checking, so you're on your own.
+* `context.output_hash` A hash mapping the field names (generally defined in `to_field` calls) to an array of values to be sent to the writer associated with that field. This allows you to modify what goes to the writer without going through a `to_field` call -- you can just set `context.output_hash['myfield'] = ['my', 'values']` and you're set. See below for more examples
 * `context.skip!(msg)` An assertion that this record should be ignored. No more indexing steps will be called, no results will be sent to the writer, and a `debug`-level log message will be written stating that the record was skipped.
 
 ## Use closures to avoid too much work
@@ -174,6 +174,55 @@ to_field('foo'), my_macro_that_doesn't_dedup_ do |rec, acc|
 end
 
 ```
+
+## Maniuplating `context.output_hash` directly
+
+As has already been mentioned, the `context.output_hash` is the end-product of your `to_field` calls. Internally, the last step in processing a `to_field` directive is to copy whatever's in the `accumulator` into `context.output_hash[field_name]`. 
+
+You can, if you'd like, change the contents of `context.output_hash` directly. It's just a ruby hash, so you can do whatever you'd like.
+
+**WARNING**: Make sure you always assign an _array_ to, e.g., `context.output_hash['foo']`, not a single value!
+
+### Use: Take the contents of an already-indexed field and maniuplate them
+
+```ruby
+
+# First, get the 008 code for language
+to_field 'language008', extract_marc('008[35-37]') do |r, acc|
+  acc.reject! {|x| x !~ /\S/} # ditch values that are just spaces
+end 
+
+# Now take the already-extracted values from the context and translate
+
+langauge_map = Traject::TranslationMap.new('marc_languages')
+to_field 'language' do |record, accumulator, context|
+  # ignore the record; get from context
+  if context.output_hash['language008']
+    accumulator.concat context.output_hash['language008'].map{|lan| language_map[lan]}
+  end
+end
+```
+
+
+### Use: Output to more than one field at a time
+
+The same example as the previous, but doing it all in one fell swoop in an `each_record`
+
+```ruby
+langauge_map = Traject::TranslationMap.new('marc_languages')
+each_record do |record, context|
+  extractor = Traject::MarcExtractor.cached('008[35-37]')
+  extractor.extract(record).each do |code|
+    context.output_hash['language008'] ||= []
+    context.output_hash['language']    ||= []
+    context.output_hash['language008'] << code
+    context.output_hash['language']    << langauge_map[code]
+  end
+end
+``` 
+  
+
+
 
 
 ## Important things to know about indexing steps
