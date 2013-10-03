@@ -309,7 +309,8 @@ to_field "geo", marc_geo_facet
 #  * that we can rely on indexing steps happening in order
 #  * how to dig into the context object if you need to
 
-# First, I'll just get the language codes out of the 008
+# First, I'll just get the language codes out of the 008, which doesn't
+# necessarily catch everywhere the country might be indicated
 to_field 'lousy_country_code', extract_marc('008[15-17]:008[17]') do |rec, acc, context|
   # remove spaces and ditch the empties
   acc.map!(&:strip)

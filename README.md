@@ -17,31 +17,50 @@ JRuby**, run
 bundle install
 ```
 
-That should install all the things you need, including `traject` itself. Then take a peek around the configuration files that specify readers and writers in the appropriate subdirectories, and take some time to look through the main [`index.rb`](index.rb) file, which contains a bunch of examples of how to extract and transform data from MARC files.
+That should install all the things you need, including `traject` itself. Then take a peek around.
 
-
-
-## The configuration files
-
-Included are a few sample configuation files, showing both a good
-subset of the options available and how you can split different
-logic units into separate files.
-
-You should take a minute to look at the reader/writer configuration
-files to see one way of specifying configuration across multiple
-files, and then walk through the index.rb file to see an example of
-production-level code.
+* a simple, stand-alone configuration file that just pulls out id, title, and author from a set of MARC-XML records is at [simplest_possible_traject_config.rb](blob/master/simplest_possible_traject_config.rb)
+* A much more extensive indexing file (extracted from the code used to index the HathiTrust catalog) is at [index.rb](blob/master/index.rb)
+* sample configuration files that specify readers and writers are in the appropriate subdirectories.
 
 Note that the file writer/solr.rb is just an example; you'll need to
-customize it to actually talk to your solr installation, and of course
-your actual indexing code will need to be producing the fields
+customize it to actually talk to your solr installation.
+
+And of course your actual indexing code will need to be producing the fields
 expected by your own solr's `schema.conf`.
 
-## Learning more
 
-Take a look at [my simple guide to using traject](guide/README.md) for ideas about how to proceed. 
+## Run #1: the simple indexing code
 
-## Running traject
+The file [simplest_possible_traject_config.rb](blob/master/simplest_possible_traject_config.rb) can be run on the included, 20-record MARC-XML file very simply as:
+
+```
+traject -c simplest_possible_traject_config.rb sample_data/20.xml 
+```
+
+That will read in the file, pull out the id/title/author, and dump the results using DebugWriter to a file named `debug_output.txt`
+
+## Run #2: the exact same thing, but harder
+
+We can do the exact same run, but show off using multiple configuration files, with:
+
+```
+traject -c reader/marc-xml.rb -c writer/debug.rb -c simplest_possible_traject_config.rb sample_data/20.xml 
+```
+
+Again, the data will be in `debug_output.txt`, as configured in the `writer/debug.rb` file.
+
+## Run #3: Again, but with the more complex index file
+
+This time we'll use the more complete sample index file in [index.rb](blob/master/index.rb)
+
+```
+traject -c reader/marc-xml.rb -c writer/debug.rb -c index.rb sample_data/20.xml 
+```
+
+Look through the `index.rb` file and the `debug_output.txt` files to see how the translation works.
+
+## Running traject in general
 
 `traject` takes a variety of options, many of which can be seen by simply running `traject --help`. Two of the most important are:
 
