@@ -1,6 +1,6 @@
 # Traject Sample Project
 
-`[traject](http://github.com/traject-project/traject/)` is a jruby-based data transformation framework, designed
+[`traject`](http://github.com/traject-project/traject/) is a jruby-based data transformation framework, designed
 especially with an eye toward indexing MARC (library bibliographic) data into Solr.
 
 This is a sample Traject project based on production code running the
