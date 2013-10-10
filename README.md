@@ -22,8 +22,8 @@ bundle install
 
 That should install all the things you need, including `traject` itself. Then take a peek around.
 
-* a simple, stand-alone configuration file that just pulls out id, title, and author from a set of MARC-XML records is at [simplest_possible_traject_config.rb](blob/master/simplest_possible_traject_config.rb)
-* A much more extensive indexing file (extracted from the code used to index the HathiTrust catalog) is at [index.rb](blob/master/index.rb)
+* a simple, stand-alone configuration file that just pulls out id, title, and author from a set of MARC-XML records is at [simplest_possible_traject_config.rb](simplest_possible_traject_config.rb)
+* A much more extensive indexing file (extracted from the code used to index the HathiTrust catalog) is at [index.rb](index.rb)
 * sample configuration files that specify readers and writers are in the appropriate subdirectories.
 
 Note that the file writer/solr.rb is just an example; you'll need to
