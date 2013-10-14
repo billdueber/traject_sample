@@ -150,6 +150,17 @@ end
 to_field "id", extract_marc("001", :first => true)
 
 
+# Wait, what was that? extract_marc is a ruby method that returns 
+# a lambda expression (e.g., an anonymous function). We build up 
+# the lambda we want based on the arguments (001, just the first one) and 
+# it gets run every time we're trying to construct the 'id' field to 
+# send to solr. 
+
+
+
+# Most of us want to store the actual, original marc record
+# in solr somewhere, in some format.
+
 # Save binary marc, if that's your thing
 # to_field 'fullrecord', serialized_marc(:format=>'binary')
 
@@ -165,6 +176,10 @@ to_field "id", extract_marc("001", :first => true)
 #
 # You could also use serialized_marc(:format=>'xml'), but it's REALLY 
 # slow. We need to address that in ruby-marc itself
+#
+#
+# Again, note that whatever happens, all that matters is that the value
+# you want gets added to the accumulator.
 
 to_field 'fullrecord' do |r, acc, context|
   xmlos = java.io.ByteArrayOutputStream.new
@@ -176,6 +191,7 @@ to_field 'fullrecord' do |r, acc, context|
 end
 
 
+# Another useful macro.
 # Get the values for all the fields between 100 and 999
 to_field "allfields", extract_all_marc_values(:from=>'100', :to=>'999')
   
@@ -191,7 +207,12 @@ to_field 'oclc', oclcnum('035a:035z')
 
 # You can do the same sort of thing "by hand", like this.
 # Find 035a that start with the string 'sdr'
-sdr_pattern = /^sdr-/  # that's just regular ruby assignment to a regular variable
+# This is just a regular ruby assignment to a regular variable
+sdr_pattern = /^sdr-/  
+
+# Now we do our logic. The block takes a record and an "accumulator", and
+# whatever is in the accumulator at the end of the block is what get assigned
+# with the field name in the eventual output hash.
 to_field 'sdrnum' do |record, acc|
   oh35a_spec = Traject::MarcExtractor.cached('035a') # use #cached, not #new
   acc.concat oh35a_spec.extract(record).grep(sdr_pattern) # only get the ones that match the pattern
@@ -199,8 +220,10 @@ end
 
 
 # Get both 10- and 13-character ISBNs
-# You could do this, and it'd work fine, but you're bettter off using
-# the solr-side code at https://github.com/billdueber/solr-libstdnum-normalize
+#
+# You could do this commented-out code, and it'd work fine, but you're bettte 
+# off using the solr-side code at 
+# https://github.com/billdueber/solr-libstdnum-normalize
 # so you're converting at solr query time as well.
 #
 # require 'library_stdnums'
@@ -221,9 +244,8 @@ end
 #   acc.concat vals
 # end
 
-# Instead, just grab the values and let the server sort it out
+# Instead of all that, just grab the values and let the server sort it out
 to_field 'isbn', extract_marc('020a:020z')
-
 to_field 'issn', extract_marc('022a:022l:022m:022y:022z:247x')
 
 # Here, I'll take advantage of the fact that extract_marc can take an
@@ -254,6 +276,8 @@ to_field 'author2', extract_marc("110ab:111ab:700abcd:710ab:711ab")
 
 # Can only have one value to sort on, so specify :first=>true
 to_field "authorSort", extract_marc("100abcd:110abcd:111abc:110ab:700abcd:710ab:711ab", :first=>true)
+
+# Other author values for searching and bumping relevancy
 to_field "author_top", extract_marc("100abcdefgjklnpqtu0:110abcdefgklnptu04:111acdefgjklnpqtu04:700abcdejqux034:710abcdeux034:711acdegjnqux034:720a:765a:767a:770a:772a:774a:775a:776a:777a:780a:785a:786a:787a:245c")
 to_field "author_rest", extract_marc("505r")
 
