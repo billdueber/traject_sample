@@ -1,4 +1,4 @@
-# A traject file is (a) totally self-contained, 
+# This very simple traject file is (a) totally self-contained,
 # and (b) just uses a debug writer to write things out.
 
 # For a more complete example of indexing code, look at
