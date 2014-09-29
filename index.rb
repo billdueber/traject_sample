@@ -2,13 +2,13 @@
 # Bill Dueber
 #
 # A more-or-less real life example of a configuration file for indexing marc
-# records, extracted from the HathiTrust catalog code.
+# records.
 #
 # A different take on most of this stuff (and hence worth taking your
 # time to look at) is packaged with traject at
-# https://github.com/jrochkind/traject/blob/master/test/test_support/demo_config.rb
+# https://github.com/traject-project/traject/blob/master/test/test_support/demo_config.rb
 #
-# Finally, the full configuration used for HathiTrust, including some 
+# Finally, the full configuration used for HathiTrust and the University of Michigan, including some
 # Plain Old Ruby Objects needed to compute a variety of HT-specific rights
 # information, is at http://github.com/billdueber/ht_traject
 # That will be a bit more confusing, but also a more realistic take on how we
@@ -38,10 +38,28 @@ require 'traject/macros/marc_format_classifier'
 extend Traject::Macros::MarcFormats
 
 
-# set this depending on what you want to see
-# and how often.
+# Provide settings for readers, writers, etc.
 settings do
-  store "log.batch_progress", 10_000
+
+  # We'll use the stock Ruby MARC reader for binary MARC.
+  # Other options include:
+  #  * "Traject::Marc4JReader" (using java's MARC4J -- can be very fast with MARC-XML)
+  #  * "Traject::AlephSequential" (see https://github.com/traject-project/traject_alephsequential_reader)
+  #  * "Traject::NDJReader" (for newline-delimited JSON, in the marc-in-json format)
+  # The docs provide more information
+
+  provide "reader_class_name", "Traject::MarcReader"
+
+  # If you were using MARC-XML, you'd uncomment this. Recognized by both
+  # Traject::MarcReader and Traject::Marc4JReader
+
+  #   provide "marc_source.type", "xml"
+
+  # set this depending on what sort of progress you
+  # want to see in the logs. I'm having it spit
+  # out a line and timings every 10k records
+  provide "log.batch_progress", 10_000
+
 end
 
 
@@ -111,27 +129,13 @@ logger.info RUBY_DESCRIPTION
 # Here, I'm using it to set up a place on the clipboard where I can 
 # stick stuff if I need to, knowing that it's not going to interfere 
 # with anything done by a macro or anything.
+#
 
 
 each_record do |rec, context|
   context.clipboard[:mysuff] = {}
 end
 
-
-# Get a marc4j record for conversion to XML, because the 
-# stock ruby-marc XML serialization code is dog-slow
-#
-# First, define a converter *outside* of the block. This way I only create the
-# object once, instead of once for every record!
-
-marc_converter = MARC::MARC4J.new(:jardir => settings['marc4j_reader.jar_dir'])
-
-# Go ahead and create a marc4j record object and hang onto it on the clipboard,
-# since I know I'm gonna need it later.
-each_record do |rec, context|
-  context.clipboard[:marc4j] = {}
-  context.clipboard[:marc4j][:marc4j_record] = marc_converter.rubymarc_to_marc4j(rec)
-end
 
 
 
@@ -158,7 +162,7 @@ to_field "id", extract_marc("001", :first => true)
 
 
 
-# Most of us want to store the actual, original marc record
+# Many of us want to store the actual, original marc record
 # in solr somewhere, in some format.
 
 # Save binary marc, if that's your thing
@@ -167,34 +171,42 @@ to_field "id", extract_marc("001", :first => true)
 # Or JSON
 # to_field 'fullrecord', serialized_marc(:format=>'json')
 
-# Or XML
-# I use marc4j to convert to xml for storage. Note that
-# I'm taking advantage of having filled the clipboard with a 
-# :marc4j_record above, and knowing (because I used the
-# marc_converter) that the marc4j libraries are all loaded up,
-# so I'm comfortable calling org.marc4j.MarcXmlWriter.new
-#
-# You could also use serialized_marc(:format=>'xml'), but it's REALLY 
-# slow. We need to address that in ruby-marc itself
-#
-#
 # Again, note that whatever happens, all that matters is that the value
 # you want gets added to the accumulator.
 
-to_field 'fullrecord' do |r, acc, context|
-  xmlos = java.io.ByteArrayOutputStream.new
-  writer = org.marc4j.MarcXmlWriter.new(xmlos)
-  writer.setUnicodeNormalization(true)
-  writer.write(context.clipboard[:marc4j][:marc4j_record])
-  writer.writeEndDocument();
-  acc << xmlos.toString
-end
+to_field 'fullrecord', serialized_marc(:format=>'json')
 
 
 # Another useful macro.
 # Get the values for all the fields between 100 and 999
 to_field "allfields", extract_all_marc_values(:from=>'100', :to=>'999')
-  
+
+
+
+################################
+###### BAILING OUT #############
+################################
+
+# At any point during the indexing process, you can call
+# context.skip!(log_message) to bail out of this record.
+#
+# Let's pretend we've got records in our file with temporary IDs
+# that start with 'TEMP' (for, say, in-process records). We can
+# skip out on them at any time. Indexing immediately stops for that
+# record (i.e., no more indexing steps will run) and it never gets
+# sent to the writer.
+#
+# This also shows how we can dip into the context.output_hash to
+# get at stuff that has already been indexed, instead of re-doing the
+# work.
+
+each_record do |rec, context|
+  id = context.output_hash['id']
+  if id and id =~ /\ATEMP/
+    context.skip!("Skipped temp record #{id}")
+  end
+end
+
 
 ################################
 ######## IDENTIFIERS ###########
@@ -220,32 +232,32 @@ end
 
 
 # Get both 10- and 13-character ISBNs
+# StdNum::ISBN.allNormalizedValues(v) returns both forms of the ISBN
+# passed, or `nil` if the thing passed didn't validate as an ISBN.
+# In the latter case, just put in whatever was passed, because maybe
+# it's useful to someone.
 #
-# You could do this commented-out code, and it'd work fine, but you're bettte 
-# off using the solr-side code at 
-# https://github.com/billdueber/solr-libstdnum-normalize
-# so you're converting at solr query time as well.
-#
-# require 'library_stdnums'
-#
-# to_field 'isbn' do |record, acc|
-#   isbn_spec = Traject::MarcExtractor.cached('020az', :separator=>nil)
-# 
-#   vals = []
-#   isbn_spec.extract(record).each do |v|
-#     std = StdNum::ISBN.allNormalizedValues(v)
-#     if std.size > 0
-#       vals.concat std
-#     else
-#       vals << v
-#     end
-#   end
-#   vals.uniq! # If it already has both a 10 and a 13, each will have generated the other
-#   acc.concat vals
-# end
+# Again, note that this is just Ruby inside the to_field call.
 
-# Instead of all that, just grab the values and let the server sort it out
-to_field 'isbn', extract_marc('020a:020z')
+require 'library_stdnums'
+
+to_field 'isbn' do |record, acc|
+   isbn_spec = Traject::MarcExtractor.cached('020az', :separator=>nil)
+
+   vals = []
+   isbn_spec.extract(record).each do |v|
+     std = StdNum::ISBN.allNormalizedValues(v)
+     if std.size > 0
+       vals.concat std
+     else
+       vals << v
+     end
+   end
+   vals.uniq! # If it already has both a 10 and a 13, each will have generated the other
+   acc.concat vals
+end
+
+# ISSNs are easier.
 to_field 'issn', extract_marc('022a:022l:022m:022y:022z:247x')
 
 # Here, I'll take advantage of the fact that extract_marc can take an
@@ -295,12 +307,17 @@ to_field 'title_c',   extract_marc('245c')
 
 # For vernacular title (which I want separate for a variety of
 # reasons), I want to  make sure I specify :only alternate_scripts
+#
+# The :alternate_script argument tells it to look for alternate scripts in the 880
+# fields, so you don't have to write up all that logic yourself.
+
 to_field 'vtitle',    extract_marc('245abdefghknp', :alternate_script=>:only, :trim_punctuation => true)
 
-# Sortable title, using the provided marc_sortable_title field
+# Sortable title, using the provided marc_sortable_title macro
 to_field "titleSort", marc_sortable_title
 
 
+# We have lots of "title" fields in order to give different relevancy weights to them.
 to_field "title_top", extract_marc("240adfghklmnoprs0:245abfghknps:247abfghknps:111acdefgjklnpqtu04:130adfghklmnoprst0")
 to_field "title_rest", extract_marc(%w[
   210ab:222ab:242abhnpy:243adfghklmnoprs:246abdenp:247abdenp
@@ -361,12 +378,6 @@ to_field 'easy_lousy_country_name',
 to_field 'lousy_country_name' do |rec, acc, context|
   # First, get a "new" translation map.
   #
-  # We *could* keep this outside the to_field call and only
-  # do it once, but all the hard work of finding
-  # and loading it from disk is cached, so it's really cheap.
-  # I prefer to keep stuff inside the to_field when possible
-  # for readability
-  #
   # The ./lib/ directory was added to the ruby path way up in 
   # line 27, which means Traject::TranslationMap will automatically
   # look inside 'lib/translation_maps' for translation files.
@@ -376,7 +387,13 @@ to_field 'lousy_country_name' do |rec, acc, context|
   # This isn't formally required, but we want to do it to avoid
   # namespace collisions (i.e., it's not hard to imagine lots of
   # traject macros that use a translation file called 'format'
-  # or whatnot). 
+  # or whatnot).
+  #
+  # We *could* get the tr map outside the to_field call and only
+  # do it once, but all the hard work of finding
+  # and loading it from disk is cached, so it's really cheap to
+  # do it inside as well. I prefer to keep stuff inside the to_field when possible
+  # for readability
 
   country_tmap = Traject::TranslationMap.new('sample/country_map')
 
@@ -424,8 +441,10 @@ end
 #
 # Note how we have to use things that actually affect the
 # accumulator itself (#reject!, #map!, #compact!, #replace, etc.) since we
-# can't assign to the accumulator, we need to actually
-# affect the array to which it points.
+# can't assign to the accumulator. We need to actually
+# affect the array to which it points in situ.
+#
+# tldr: never do acc = acc.map{|x| ...}. It won't work.
 
 to_field 'editor', extract_marc('245c') do |record, accumulator, context|
 
