@@ -48,7 +48,7 @@ That will read in the file, pull out the id/title/author, and dump the results u
 We can do the exact same run, but show off using multiple configuration files, with:
 
 ```
-traject -c reader/marc-xml.rb -c writer/debug.rb -c simplest_possible_traject_config.rb sample_data/20.xml 
+traject -c reader/marc4j-xml.rb -c writer/debug.rb -c simplest_possible_traject_config.rb sample_data/20.xml
 ```
 
 Again, the data will be in `debug_output.txt`, as configured in the `writer/debug.rb` file.
@@ -58,7 +58,7 @@ Again, the data will be in `debug_output.txt`, as configured in the `writer/debu
 This time we'll use the more complete sample index file in [index.rb](blob/master/index.rb)
 
 ```
-traject -c reader/marc-xml.rb -c writer/debug.rb -c index.rb sample_data/20.xml 
+traject -c reader/marc4j-xml.rb -c writer/debug.rb -c index.rb sample_data/20.xml
 ```
 
 Look through the `index.rb` file and the `debug_output.txt` files to see how the translation works.
