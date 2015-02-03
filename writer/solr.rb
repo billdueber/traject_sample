@@ -12,13 +12,11 @@ settings do
     provide "solr.url", "http://my.production.machine:9033/catalog"
   end
   
-  provide "solrj_writer.parser_class_name", "BinaryResponseParser" # for Solr 4.x
-  # provide "solrj_writer.parser_class_name", "XMLResponseParser" # For solr 1.x or 3.x
-  
-  provide "solrj_writer.commit_on_close", "true"
-  provide "solrj_writer.thread_pool", 1
-  provide "solrj_writer.batch_size", 150
-  provide "writer_class_name", "Traject::SolrJWriter"
+
+  provide "solr_writer.commit_on_close", "true"
+  provide "solr_writer.thread_pool", 1
+  provide "solr_writer.batch_size", 100
+  provide "writer_class_name", "Traject::SolrJsonWriter"
   
   provide 'processing_thread_pool', 3
 end

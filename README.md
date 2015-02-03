@@ -1,6 +1,6 @@
 # Traject Sample Project
 
-[`traject`](http://github.com/traject-project/traject/) is a jruby-based data transformation framework, designed
+[`traject`](http://github.com/traject-project/traject/) is a ruby-based data transformation framework, designed
 especially with an eye toward indexing MARC (library bibliographic) data into Solr.
 
 This is a sample Traject project based on production code running the
@@ -13,8 +13,7 @@ complete description of the out-of-the-box macros available.
 
 ## Getting started
 
-You should just be able to clone this repository and then, **under
-JRuby**, run
+You should just be able to clone this repository and then run
 
 ```
 bundle install
@@ -41,14 +40,14 @@ The file [simplest_possible_traject_config.rb](blob/master/simplest_possible_tra
 traject -c simplest_possible_traject_config.rb sample_data/20.xml 
 ```
 
-That will read in the file, pull out the id/title/author, and dump the results using DebugWriter to a file named `debug_output.txt`
+That will read in the file, pull out the id/title/author, and dump the results using `DebugWriter` to a file named `debug_output.txt`
 
 ## Run #2: the exact same thing, but harder
 
 We can do the exact same run, but show off using multiple configuration files, with:
 
 ```
-traject -c reader/marc4j-xml.rb -c writer/debug.rb -c simplest_possible_traject_config.rb sample_data/20.xml
+traject -c reader/marc-xml.rb  -c simplest_possible_traject_config.rb -c writer/debug.rb sample_data/20.xml
 ```
 
 Again, the data will be in `debug_output.txt`, as configured in the `writer/debug.rb` file.
@@ -58,7 +57,7 @@ Again, the data will be in `debug_output.txt`, as configured in the `writer/debu
 This time we'll use the more complete sample index file in [index.rb](blob/master/index.rb)
 
 ```
-traject -c reader/marc4j-xml.rb -c writer/debug.rb -c index.rb sample_data/20.xml
+traject -c reader/marc-xml.rb -c writer/debug.rb -c index.rb sample_data/20.xml
 ```
 
 Look through the `index.rb` file and the `debug_output.txt` files to see how the translation works.

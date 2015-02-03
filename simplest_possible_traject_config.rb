@@ -17,13 +17,13 @@
 # First we need to require the reader/writer we want
 
 require 'traject'
-require 'traject/marc4j_reader'
+require 'traject/marc_reader'
 require 'traject/debug_writer'
 
 
 # The add the appropriate settings
 settings do
-  provide "reader_class_name", "Traject::Marc4JReader"
+  provide "reader_class_name", "Traject::MarcReader"
   provide "marc_source.type", "xml"
   provide "writer_class_name", "Traject::DebugWriter"
   provide "output_file", "debug_output.txt"
@@ -38,7 +38,7 @@ end
 
 
 
-# Log what version of jruby/java we're using
+# Log what version of ruby or jruby we're using
 
 logger.info RUBY_DESCRIPTION
 
