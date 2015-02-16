@@ -55,10 +55,19 @@ settings do
 
   #   provide "marc_source.type", "xml"
 
+
+  # We also need to provide a writer. The default is the Solr-JSON writer,
+  # to write to a suitably-configured Solr installation, but you can
+  # include (via '-c') one of the writer
+  # configuration files in writer/, say writer/json.rb, or even
+  # use the command-line option --writer to give the class name
+  # of the writer (e.g., Traject::DebugWriter)
+  
+
   # set this depending on what sort of progress you
   # want to see in the logs. I'm having it spit
-  # out a line and timings every 10k records
-  provide "log.batch_progress", 10_000
+  # out a line and timings every 1k records
+  provide "log.batch_progress", 1_000
 
 end
 
